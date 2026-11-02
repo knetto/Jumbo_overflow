@@ -2,6 +2,8 @@
 
 Een functioneel kennisplatform voor Jumbo-filialen, met een interface die is gebaseerd op de actuele Jumbo-webhuisstijl. Zelfstandig studieconcept; geen officiële Jumbo-dienst.
 
+Dit project wordt lokaal ontwikkeld en bekeken op **http://localhost:4173**. Een commit of synchronisatie met GitHub publiceert de website niet. De vormgeving en gebruikte ontwerpbronnen staan in [DESIGN.md](DESIGN.md).
+
 ## Starten
 
 Node.js 22.13 of hoger is nodig. Er is geen frontend-build nodig voor lokaal gebruik.
@@ -22,10 +24,12 @@ Open http://localhost:4173. De lokale server gebruikt SQLite in `.data/jumboover
 - Filialen volgen, persoonlijke bewaarde items en een aanpasbaar profiel.
 - Geaggregeerde praktijkinzichten en een CSV-export zonder auteurs en filiaalnamen.
 - Responsieve mobiele navigatie, toetsenbordbediening, focusvasthouding in vensters en verminderde animatie bij de bijbehorende systeeminstelling.
+- Eigen Jumbo-dropdowns voor filters, sortering, onderwerpen, filiaal en rol; met toetsenbordnavigatie, zoeken door te typen, automatisch omhoog uitklappen en een subtiele GSAP-animatie. GSAP wordt lokaal geladen, zonder CDN.
+- Een eigen stadsillustratie voor elk van de twaalf filialen.
 
 ## Opslag en toegang
 
-De online versie draait als een self-contained Cloudflare Worker met D1-database. Sites verzorgt de toegang via ChatGPT; de server gebruikt uitsluitend de door het platform aangeleverde gebruikersidentiteit. Eigenaarcontroles en validatie gebeuren op de server. Een profielrol is een omschrijving en verleent geen aanvullende rechten. De site begint privé; er is geen uitnodiging verstuurd en de toegang is niet openbaar gemaakt.
+De lokale versie gebruikt SQLite en een ontwikkelcookie per browsercontext. De code bevat daarnaast een optionele Cloudflare Worker met D1-database; in die omgeving verzorgt Sites de toegang via ChatGPT. Er wordt niet automatisch gedeployd. Eigenaarcontroles en validatie gebeuren op de server. Een profielrol is een omschrijving en verleent geen aanvullende rechten.
 
 De eerste inhoud is fictieve demodata, eenmalig ingevoegd buiten de schemamigratie. Nieuwe bijdragen worden gedeeld opgeslagen. Stemmen zijn uniek per gebruiker en bijdrage. Bewaarde items, gevolgde filialen en het profiel zijn persoonlijk. De inzichtenpagina presenteert thema's en totalen; dit is geen afzonderlijk beveiligd hoofdkantoorportaal of volledig anonimiseringssysteem voor de rest van de community.
 

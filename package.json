@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "node server.mjs",
     "start": "node server.mjs",
-    "test": "node --test tests/api.test.mjs tests/app.test.mjs",
-    "check": "node --check public/app.js && node --check public/data.js && node --check worker/api.js",
+    "test": "node --test tests/api.test.mjs tests/app.test.mjs tests/dropdowns.test.mjs",
+    "check": "node --check public/app.js && node --check public/data.js && node --check public/views.js && node --check public/city-art.js && node --check public/interactions.js && node --check worker/api.js",
     "build": "node scripts/build.mjs",
     "db:generate": "drizzle-kit generate"
   },
@@ -16,6 +16,7 @@
     "playwright": "^1.56.1"
   },
   "dependencies": {
-    "drizzle-orm": "^0.45.2"
+    "drizzle-orm": "^0.45.2",
+    "gsap": "^3.15.0"
   }
 }

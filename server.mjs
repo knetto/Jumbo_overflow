@@ -8,7 +8,7 @@ import { handleApi } from './worker/api.js';
 const root = path.resolve(fileURLToPath(new URL('./public/', import.meta.url)));
 const db = createLocalDb(fileURLToPath(new URL('./.data/jumbooverflow.sqlite',import.meta.url)));
 const port = Number(process.env.PORT || 4173); // Override PORT for a second local preview.
-const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.json': 'application/json' };
+const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.json': 'application/json' };
 export const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://localhost');

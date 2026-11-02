@@ -49,7 +49,8 @@ test('Search includes posts and templates; unanswered filter is accurate',async(
   assert.ok(await page.locator('.post-card').count()>0);
   assert.ok(await page.locator('.template-card').count()>0);
   await page.locator('a.brand').click();
-  await page.locator('[data-action="sort"][data-id="unanswered"]').click();
+  await page.getByRole('combobox',{name:'Sorteer bijdragen',exact:true}).click();
+  await page.getByRole('option',{name:'Onbeantwoord',exact:true}).click();
   assert.equal(await page.locator('.post-card').count(),3);
   const counts=await page.locator('.post-card .meta-comments').allTextContents();
   assert.ok(counts.every(s=>s.includes('0 reacties')));
@@ -60,7 +61,8 @@ test('A colleague can ask, answer, accept an answer and reload their contributio
   await page.getByRole('button',{name:'Stel je vraag',exact:true}).click();
   await page.locator('#post-title').fill('Hoe regelen jullie de overdracht in het weekend?');
   await page.locator('#post-body').fill('Wij zoeken een fijne werkwijze zodat iedereen dezelfde informatie krijgt tijdens de weekenddiensten.');
-  await page.locator('#post-category').selectOption('planning');
+  await page.getByRole('combobox',{name:'Onderwerp',exact:true}).click();
+  await page.getByRole('option',{name:'Planning & bezetting',exact:true}).click();
   await page.getByRole('button',{name:'Publiceer bijdrage'}).click();
   await page.locator('.detail-content h1').waitFor();
   assert.match(await page.locator('.detail-content h1').textContent(),/weekend/);
