@@ -12,7 +12,7 @@ export function createViews(C) {
       <header class="topbar">
         <button class="mobile-menu icon-button" data-action="menu" aria-label="Menu openen" aria-expanded="${ui.mobileOpen}">${icon('menu')}</button>
         <a class="brand" href="#kennisplein" aria-label="JumboOverflow startpagina"><img src="./assets/jumbo-logo.svg" alt="Jumbo"><span class="brand-tail">overflow<span class="brand-dot">.</span></span></a>
-        <form class="header-search" id="search-form" role="search">${icon('search')}<input id="global-search" type="search" aria-label="Zoek een vraag, tip of template" placeholder="Waar ben je naar op zoek?" value="${esc(ui.query)}" autocomplete="off"><span class="shortcut">Ctrl K</span></form>
+        <form class="header-search" id="search-form" role="search">${icon('search')}<input id="global-search" type="search" aria-label="Zoek een vraag, tip of template" placeholder="Beschrijf je vraag of probleem…" maxlength="400" value="${esc(ui.query)}" autocomplete="off"><span class="shortcut">Ctrl K</span></form>
         <div class="header-right">
           <button class="icon-button mobile-search" data-action="open-search" aria-label="Zoeken">${icon('search')}</button>
           <button class="header-location" data-action="profile">${icon('store','sm')}<span>Jumbo ${esc(b.city)}</span>${icon('down','sm')}</button>

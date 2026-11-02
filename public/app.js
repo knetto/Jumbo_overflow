@@ -2,6 +2,7 @@ import { createViews } from './views.js';
 import { initInteractions, enhanceSelects, closeDropdown, animateDialog } from './interactions.js';
 import { categories, branches, createSeed } from './data.js';
 import { icon, esc, avatar } from './ui.js';
+import { searchForm, searchResults } from './search-view.js';
 
 const STORAGE_KEY = 'jumbooverflow.v1';
 let storageAvailable = true;
@@ -17,6 +18,7 @@ let backendMode = 'local';
 let syncQueue = Promise.resolve();
 let pendingWrites = 0;
 const ui = { type:'all', category:'all', sort:'popular', limit:6, query:'', branch:'all', templateCategory:'all', mobileOpen:false };
+const searchFilters = { type:'all', category:'all', branch:'all' };
 const answerDrafts = new Map();
 function captureAnswerDraft(){const field=$('#answer-body');const form=$('#answer-form');if(field&&form)answerDrafts.set(form.dataset.id,field.value);}
 let modalReturnFocus = null;
@@ -27,7 +29,7 @@ let answerSort = 'votes';
 const $ = (sel, root=document) => root.querySelector(sel);
 const branch = id => branches.find(b=>b.id===id) || branches[0];
 const category = id => categories.find(c=>c.id===id) || categories[0];
-const route = () => decodeURIComponent(location.hash.slice(1) || 'kennisplein');
+const route = () => { try { return decodeURIComponent(location.hash.slice(1) || 'kennisplein'); } catch { return 'zoeken'; } };
 const page = () => route().split('/')[0];
 const id = prefix => `${prefix}${Date.now().toString(36)}${Math.random().toString(36).slice(2,7)}`;
 const countText = (n,s,p) => `${n} ${n===1?s:p}`;
@@ -117,7 +119,45 @@ function libraryPage(){let templates=[...state.templates];if(ui.templateCategory
 function branchesPage(...args) { return views.branchesPage(...args); }
 function insightsPage(){const totalVotes=state.posts.reduce((n,p)=>n+p.votes+p.answers.reduce((v,a)=>v+a.votes,0),0);const unanswered=state.posts.filter(p=>p.type==='question'&&!p.answers.length);const categoryCounts=categories.map(c=>({...c,count:state.posts.filter(p=>p.category===c.id).length})).sort((a,b)=>b.count-a.count);const max=categoryCounts[0]?.count||1;const top=state.posts.filter(p=>p.type==='hack').sort((a,b)=>b.votes-a.votes).slice(0,4);return `${breadcrumb('Praktijkinzichten')}<div class="page-heading"><div><div class="eyebrow">LUISTEREN NAAR DE WINKELVLOER</div><h1>Kleine signalen. Landelijke lessen.</h1><p>Waar lopen filialen tegenaan? En welke oplossingen helpen echt?<br>Bekijk de thema's, zonder medewerkers of filialen met elkaar te vergelijken.</p></div><button class="button secondary export-button" data-action="export-insights">${icon('download','sm')}Exporteer inzichten</button></div><div class="stats-grid"><div class="stat-card"><div class="stat-label">Gedeelde kennis ${icon('messages','sm')}</div><strong>${state.posts.length}</strong><small>vragen en praktijkhacks</small></div><div class="stat-card"><div class="stat-label">Stemmen uit de praktijk ${icon('up','sm')}</div><strong>${new Intl.NumberFormat('nl-NL').format(totalVotes)}</strong><small>op bijdragen en reacties</small></div><div class="stat-card"><div class="stat-label">Herbruikbare templates ${icon('files','sm')}</div><strong>${state.templates.length}</strong><small>${state.templates.filter(t=>t.parentId).length} aangepaste versies</small></div><div class="stat-card"><div class="stat-label">Nog zonder reactie ${icon('help','sm')}</div><strong>${unanswered.length}</strong><small>vragen waar collega's op wachten</small></div></div><div class="insights-grid"><section class="chart-card"><h2>Dit leeft op de winkelvloer</h2><p>Aantal bijdragen per onderwerp · alle demodata</p><div class="chart-rows">${categoryCounts.map(c=>`<div class="chart-row"><span>${esc(c.name)}</span><div class="chart-track"><div class="chart-bar" style="width:${(c.count/max)*100}%" role="img" aria-label="${esc(c.name)}: ${c.count} bijdragen"></div></div><strong>${c.count}</strong></div>`).join('')}</div></section><section class="chart-card"><h2>Dit werkt volgens collega's</h2><p>Praktijkhacks met de meeste upvotes</p>${top.map((p,i)=>`<div class="insight-item"><span class="insight-number">${i+1}</span><div><h3>${esc(p.title)}</h3><p>${esc(category(p.category).name)} · ${p.votes} upvotes</p></div></div>`).join('')}</section></div><div class="privacy-banner">${icon('shield')}<p><strong>Inzicht in thema's, zonder individuele profielen.</strong><br>Deze pagina toont alleen geaggregeerde gegevens. Namen, reacties en filiaalgegevens staan niet in de export. Alle getoonde community-inhoud is fictieve demodata; dit is geen beoordeling van echte medewerkers of filialen.</p></div>${footer()}`;}
 function detailPage(){const post=state.posts.find(p=>p.id===route().split('/')[1]);if(!post)return breadcrumb('Bijdrage')+empty('Deze bijdrage bestaat niet.','De link klopt niet of deze bijdrage is niet meer beschikbaar.','discover','Naar het kennisplein');const b=branch(post.branch);const answers=[...post.answers].sort(answerSort==='new'?(a,b)=>b.createdAt-a.createdAt:(a,b)=>Number(b.accepted)-Number(a.accepted)||b.votes-a.votes);return `${breadcrumb(typeLabel(post.type))}<button class="back-button" data-action="discover">${icon('arrowLeft','sm')}Terug naar het kennisplein</button><div class="detail-layout"><section><article class="detail-card">${voteButton(post.id,post.votes)}<div class="detail-content"><div class="post-tags">${categoryTag(post.category)}${typeTag(post.type)}${post.solved?'<span class="tag solved">'+icon('check','sm')+(post.type==='hack'?'Werkt in de praktijk':'Opgelost')+'</span>':''}</div><h1>${esc(post.title)}</h1><div class="post-meta">${avatar(post.author,'tiny',b.color)}<span class="author">${esc(post.author)}</span><span>· Jumbo ${esc(b.city)}</span><span>· ${timeAgo(post.createdAt)}</span></div><div class="prose">${esc(post.body)}</div><div class="detail-tag-row">${post.tags.map(t=>`<span class="tag">#${esc(t)}</span>`).join('')}</div><div class="detail-action-row"><button data-action="save-post" data-id="${post.id}">${icon('bookmark','sm')}${state.saved.includes(post.id)?'Bewaard':'Bewaar bijdrage'}</button><button data-action="share" data-id="${post.id}">${icon('share','sm')}Deel bijdrage</button>${post.own&&post.type==='question'?`<button data-action="solve" data-id="${post.id}">${icon('checkCircle','sm')}${post.solved?'Heropen vraag':'Markeer als opgelost'}</button>`:''}</div></div></article><div class="answers-heading"><h2>${countText(answers.length,'reactie uit de praktijk','reacties uit de praktijk')}</h2><select id="answer-sort" class="sort-select" aria-label="Sorteer reacties"><option value="votes" ${answerSort==='votes'?'selected':''}>Meest behulpzaam</option><option value="new" ${answerSort==='new'?'selected':''}>Nieuwste eerst</option></select></div>${answers.map(a=>`<article class="answer-card ${a.accepted?'accepted':''}">${voteButton(a.id,a.votes)}<div class="answer-content">${a.accepted?`<div class="accept-label">${icon('checkCircle','sm')}Dit antwoord hielp de vraagsteller</div>`:''}<div class="prose">${esc(a.body)}</div><div class="post-meta">${avatar(a.author,'tiny',branch(a.branch).color)}<span class="author">${esc(a.author)}</span><span>· Jumbo ${esc(branch(a.branch).city)}</span><span>· ${timeAgo(a.createdAt)}</span>${post.own?`<button class="button text" data-action="accept-answer" data-id="${a.id}" data-post="${post.id}" style="font-size:10px;min-height:0;padding:0;margin-left:auto">${icon('check','sm')}${a.accepted?'Geaccepteerd':'Dit hielp mij'}</button>`:''}</div></div></article>`).join('')}<form class="answer-form" id="answer-form" data-id="${post.id}"><h2>Wat werkt bij jullie?</h2><p>Een klein idee kan voor een ander filiaal een groot verschil maken.</p><label class="field-label" for="answer-body">Jouw reactie</label><textarea id="answer-body" name="body" required minlength="10" maxlength="6000" placeholder="Deel je ervaring of stel een verdiepende vraag…" style="margin-top:8px"></textarea><button class="button primary" type="submit">${icon('messages','sm')}Plaats je reactie</button></form></section><aside class="detail-aside"><div class="side-card"><h3>${icon('store','sm')}Gedeeld vanuit de praktijk</h3><div style="display:flex;gap:10px;align-items:center;margin:17px 0">${avatar(post.author,'medium',b.color)}<div><strong style="font-size:13px">${esc(post.author)}</strong><p style="font-size:11px">Jumbo ${esc(b.city)} · ${esc(b.name)}</p></div></div><button class="button secondary full small" data-action="follow" data-id="${b.id}">${icon(state.followedBranches.includes(b.id)?'check':'plus','sm')}${state.followedBranches.includes(b.id)?'Je volgt dit filiaal':'Volg dit filiaal'}</button></div><div class="side-card"><h3>${icon('lightbulb','sm')}Samen komen we verder</h3><p>Deel wat bij jou werkt. Wees duidelijk, blijf vriendelijk en laat persoonlijke gegevens achterwege.</p></div><div class="side-card"><h3>Ook interessant</h3>${state.posts.filter(p=>p.id!==post.id&&p.category===post.category).slice(0,3).map(p=>`<a class="related-link" href="#vraag/${p.id}">${esc(p.title)}</a>`).join('')}</div></aside></div>${footer()}`;}
-function searchPage(){const q=ui.query.trim().toLocaleLowerCase('nl');const matches=x=>[x.title,x.body,x.description,x.author,branch(x.branch).city,category(x.category).name,...(x.tags||[])].filter(Boolean).join(' ').toLocaleLowerCase('nl').includes(q);const posts=q?state.posts.filter(matches):[];const templates=q?state.templates.filter(matches):[];return `${breadcrumb('Zoeken')}<div class="page-heading"><div><div class="eyebrow">VIND DE KENNIS VAN JE COLLEGA'S</div><h1>${q?`Zoekresultaten voor “${esc(ui.query.trim())}”`:'Waar loop jij tegenaan?'}</h1><p>${q?`${countText(posts.length+templates.length,'resultaat','resultaten')} op het kennisplein`:'Zoek op onderwerp, filiaal, vraag of template.'}</p></div></div><form id="page-search-form" class="form-field" role="search" style="max-width:650px;margin-bottom:28px"><label for="page-search">Doorzoek de community</label><div style="display:flex;gap:10px"><input id="page-search" type="search" placeholder="Bijvoorbeeld: inwerken, overdracht of planning" value="${esc(ui.query)}"><button class="button primary" type="submit">${icon('search','sm')}Zoeken</button></div></form>${q?`<div class="search-sections">${posts.length?`<h2>${countText(posts.length,'bijdrage','bijdragen')}</h2><div class="post-list">${posts.map(postCard).join('')}</div>`:''}${templates.length?`<h2>${countText(templates.length,'template','templates')}</h2><div class="template-grid">${templates.map(templateCard).join('')}</div>`:''}${!posts.length&&!templates.length?empty('Nog niets gevonden.','Probeer een ander zoekwoord of stel je vraag aan collega’s.'):''}</div>`:''}${footer()}`;}
+function searchPage(){return `${breadcrumb('Zoeken')}${searchForm(ui.query)}<section class="search-sections" aria-label="Zoekresultaten">${searchResults(state,ui.query,searchFilters,{categories,branches})}</section>${footer()}`;}
+
+function resetSearchFilters(){Object.assign(searchFilters,{type:'all',category:'all',branch:'all'});}
+function readSearchRoute(){
+  if(page()!=='zoeken')return;
+  const query=route().startsWith('zoeken/')?route().slice(7):ui.query;
+  if(query!==ui.query)resetSearchFilters();
+  ui.query=query.slice(0,400);
+}
+function updateSearchResults(){
+  const target=$('.search-sections');if(!target)return;
+  // Keep the input in place while typing: focus, caret and IME composition survive.
+  const focused=document.activeElement;
+  const focusAction=focused?.dataset.action;
+  const focusId=focused?.dataset.id;
+  const selectId=focused?.dataset.selectId;
+  closeDropdown();
+  target.innerHTML=searchResults(state,ui.query,searchFilters,{categories,branches});
+  enhanceSelects(target);
+  if(selectId)$(`[data-select-id="${selectId}"]`,target)?.focus();
+  else if(focusAction)[...target.querySelectorAll('[data-action]')].find(el=>el.dataset.action===focusAction&&el.dataset.id===focusId)?.focus();
+}
+function runSearch(query,{reset=false}={}){
+  clearTimeout(searchTimer);
+  const alreadySearching=page()==='zoeken';
+  ui.query=String(query).slice(0,400);
+  if(reset)resetSearchFilters();
+  const target=`#zoeken/${encodeURIComponent(ui.query)}`;
+  // One history entry opens search; subsequent keystrokes update that entry.
+  history[alreadySearching?'replaceState':'pushState'](null,'',target);
+  if(alreadySearching)updateSearchResults();else renderMain();
+  for(const link of document.querySelectorAll('.side-nav .nav-link')){
+    const active=link.hash==='#kennisplein';
+    link.classList.toggle('active',active);
+    if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');
+  }
+  $('.search-intro')?.classList.toggle('has-query',Boolean(ui.query.trim()));
+  for(const field of document.querySelectorAll('#global-search,#page-search'))if(field.value!==ui.query)field.value=ui.query;
+}
 function renderMain(){captureAnswerDraft();const pg=page();$('#main').innerHTML=pg==='templates'?libraryPage():pg==='filialen'?branchesPage():pg==='inzichten'?insightsPage():pg==='vraag'?detailPage():pg==='zoeken'?searchPage():feedPage();if($('#answer-body'))$('#answer-body').value=answerDrafts.get($('#answer-form').dataset.id)||'';enhanceSelects($('#main'));document.title=`${({templates:'Templates',filialen:'Filialen',inzichten:'Praktijkinzichten',vraag:'Bijdrage',zoeken:'Zoeken',bewaard:'Bewaard','mijn-bijdragen':'Mijn bijdragen',volgend:'Mijn netwerk'}[pg]||'Kennisplein')} · JumboOverflow`;}
 function render(){captureAnswerDraft();shell();renderMain();}
 
@@ -173,6 +213,9 @@ document.addEventListener('click',async event=>{
     case 'open-branches':closeModal();navigate('filialen');break;
     case 'open-library':navigate('templates');break;
     case 'open-search':navigate('zoeken');setTimeout(()=>$('#page-search')?.focus(),50);break;
+    case 'search-example':runSearch(el.dataset.query,{reset:true});$('#page-search')?.focus();break;
+    case 'search-type':searchFilters.type=key;updateSearchResults();break;
+    case 'search-reset':resetSearchFilters();updateSearchResults();$('#page-search')?.focus();break;
     case 'close-modal':closeModal();break;
     case 'discover':resetFilters();navigate('kennisplein');break;
     case 'menu':ui.mobileOpen=!ui.mobileOpen;$('.sidebar').classList.toggle('open',ui.mobileOpen);$('.mobile-backdrop').classList.toggle('visible',ui.mobileOpen);el.setAttribute('aria-expanded',ui.mobileOpen);break;
@@ -183,12 +226,23 @@ document.addEventListener('click',async event=>{
   }
 });
 document.addEventListener('input',event=>{
-  if(event.target.id==='global-search'){
-    ui.query=event.target.value;clearTimeout(searchTimer);
-    searchTimer=setTimeout(()=>{if(page()!=='zoeken'){history.replaceState(null,'','#zoeken');$('.nav-link.active')?.removeAttribute('aria-current');}renderMain();},200);
+  if(['global-search','page-search'].includes(event.target.id)){
+    clearTimeout(searchTimer);
+    if(event.isComposing)return;
+    const value=event.target.value;
+    searchTimer=setTimeout(()=>runSearch(value,{reset:true}),220);
+  }
+});
+document.addEventListener('compositionend',event=>{
+  if(['global-search','page-search'].includes(event.target.id)){
+    clearTimeout(searchTimer);
+    const value=event.target.value;
+    searchTimer=setTimeout(()=>runSearch(value,{reset:true}),220);
   }
 });
 document.addEventListener('change',async event=>{
+  if(event.target.id==='search-category'){searchFilters.category=event.target.value;updateSearchResults();}
+  if(event.target.id==='search-branch'){searchFilters.branch=event.target.value;updateSearchResults();}
   if(event.target.id==='feed-sort'){ui.sort=event.target.value;ui.limit=6;renderMain();}
   if(event.target.id==='category-select'){ui.category=event.target.value;ui.limit=6;render();}
   if(event.target.id==='answer-sort'){answerSort=event.target.value;renderMain();}
@@ -204,7 +258,7 @@ document.addEventListener('change',async event=>{
 });
 document.addEventListener('submit',event=>{
   const form=event.target;if(!['search-form','page-search-form','contribution-form','answer-form','fork-form','profile-form'].includes(form.id))return;event.preventDefault();
-  if(form.id==='search-form'||form.id==='page-search-form'){clearTimeout(searchTimer);ui.query=form.id==='search-form'?$('#global-search').value:$('#page-search').value;navigate('zoeken');return;}
+  if(form.id==='search-form'||form.id==='page-search-form'){runSearch(form.id==='search-form'?$('#global-search').value:$('#page-search').value,{reset:true});return;}
   const data=new FormData(form);const value=name=>String(data.get(name)||'').trim();
   if(form.id==='contribution-form'){
     const type=value('type');if(value('title').length<8||value('body').length<20){toast('Vul een titel en een duidelijke beschrijving in.');return;}
@@ -235,10 +289,11 @@ document.addEventListener('keydown',event=>{
   if((event.key==='Enter'||event.key===' ')&&event.target.matches('[role="button"][data-action]')){event.preventDefault();event.target.click();}
   if(event.key==='Tab'&&$('#modal-root').innerHTML){const nodes=[...$('.modal').querySelectorAll('button,a[href],input:not([type="radio"]),input:checked,select,textarea,[tabindex="0"]')].filter(el=>!el.disabled&&!el.closest('[hidden]'));const first=nodes[0],last=nodes.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}}
 });
-window.addEventListener('hashchange',()=>{ui.mobileOpen=false;render();window.scrollTo({top:0,behavior:'instant'});});
+window.addEventListener('hashchange',()=>{clearTimeout(searchTimer);readSearchRoute();ui.mobileOpen=false;render();window.scrollTo({top:0,behavior:'instant'});});
 window.addEventListener('storage',event=>{if(backendMode==='local'&&event.key===STORAGE_KEY){state=loadState();render();toast('Je kennisplein is bijgewerkt vanuit een ander tabblad.');}});
 initInteractions();
 await initialize();
+readSearchRoute();
 render();
 setInterval(async()=>{
   if(backendMode!=='shared'||pendingWrites||document.hidden||document.querySelector('.modal')||document.activeElement?.matches('input,textarea,select,.dropdown-trigger'))return;

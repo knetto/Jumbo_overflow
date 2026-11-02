@@ -18,7 +18,8 @@ Open http://localhost:4173. De lokale server gebruikt SQLite in `.data/jumboover
 ## Wat werkt
 
 - 24 oorspronkelijke vragen/praktijkhacks, inhoudelijke antwoorden, 12 templates en 12 fictieve filiaalprofielen.
-- Zoeken door vragen, tips en templates; filteren per onderwerp, type en filiaal; sorteren op populariteit, nieuw en onbeantwoord.
+- Zoeken met losse woorden of hele zinnen door vragen, praktijkhacks, antwoorden en volledige templates. Met Nederlandse verwante begrippen, woordvarianten, kleine typefouten, relevantiesortering en gemarkeerde fragmenten. Zoekresultaten zijn te filteren per type, onderwerp en filiaal; een zoeklink bewaart de zoekzin bij herladen.
+- Het kennisplein filteren per onderwerp, type en filiaal en sorteren op populariteit, nieuw en onbeantwoord.
 - Vragen en praktijkhacks plaatsen, reageren, stemmen en een antwoord accepteren. Alleen de auteur kan een eigen vraag oplossen of een antwoord markeren.
 - Een template bekijken, bewaren, als echt Markdown-/CSV-/JSON-/tekstbestand downloaden, aanpassen (forken) en opnieuw delen. Tekstbestanden uploaden tot 500 KB en 80.000 tekens.
 - Filialen volgen, persoonlijke bewaarde items en een aanpasbaar profiel.
@@ -28,6 +29,8 @@ Open http://localhost:4173. De lokale server gebruikt SQLite in `.data/jumboover
 - Een eigen stadsillustratie voor elk van de twaalf filialen.
 
 ## Opslag en toegang
+
+De zoekfunctie draait volledig lokaal in de browser; zoekvragen en inhoud gaan niet naar een externe zoek- of AI-dienst. `public/search-engine.js` weegt titels, tags, inhoud en antwoorden, met een vaste woordenlijst voor winkelonderwerpen zoals inwerken, uitval, FIFO en overdracht. Het is een lokale zoekmachine, geen taalmodel: vrije zinnen werken het beste wanneer de situatie herkenbare winkelbegrippen bevat. Nieuwe bijdragen, reacties en aangepaste templates zijn direct doorzoekbaar. `public/search-view.js` en `public/search.css` verzorgen de zoekinterface.
 
 De lokale versie gebruikt SQLite en een ontwikkelcookie per browsercontext. De code bevat daarnaast een optionele Cloudflare Worker met D1-database; in die omgeving verzorgt Sites de toegang via ChatGPT. Er wordt niet automatisch gedeployd. Eigenaarcontroles en validatie gebeuren op de server. Een profielrol is een omschrijving en verleent geen aanvullende rechten.
 
