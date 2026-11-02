@@ -335,6 +335,14 @@ document.addEventListener('keydown', event => {
 window.addEventListener('hashchange', () => { clearTimeout(searchTimer); readSearchRoute(); ui.mobileOpen = false; render(); window.scrollTo({ top: 0, behavior: 'instant' }); });
 window.addEventListener('storage', event => { if (backendMode === 'local' && event.key === STORAGE_KEY) { state = loadState(); render(); toast('Je kennisplein is bijgewerkt vanuit een ander tabblad.'); } });
 window.addEventListener('scroll', updateHeaderShadow, { passive: true });
+window.addEventListener('focus', async () => {
+  try {
+    const html = await (await fetch('./index.html', { cache: 'no-store' })).text();
+    const match = html.match(/styles\.css\?v=([0-9]+)/);
+    const current = document.querySelector('link[href*="styles.css"]')?.getAttribute('href')?.match(/v=([0-9]+)/);
+    if (match && current && match[1] !== current[1]) location.reload();
+  } catch { }
+});
 initInteractions();
 await initialize();
 readSearchRoute();

@@ -274,8 +274,7 @@
 .search-result-body h3>button:hover,
 .search-result-body .post-title:hover {
   text-decoration: underline;
-  text-decoration-color: var(--yellow, #fcbf00);
-  text-decoration-thickness: 2px;
+  text-decoration-thickness: 1.5px;
   text-underline-offset: 4px;
 }
 
