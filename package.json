@@ -1,0 +1,21 @@
+{
+  "name": "jumbooverflow",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server.mjs",
+    "start": "node server.mjs",
+    "test": "node --test tests/api.test.mjs tests/app.test.mjs",
+    "check": "node --check public/app.js && node --check public/data.js && node --check worker/api.js",
+    "build": "node scripts/build.mjs",
+    "db:generate": "drizzle-kit generate"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.10",
+    "playwright": "^1.56.1"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.2"
+  }
+}
