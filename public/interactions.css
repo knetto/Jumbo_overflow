@@ -67,6 +67,14 @@
 .button > .icon:last-child:not(:first-child) { transition: transform .2s cubic-bezier(.2,.7,.2,1); }
 .button:hover > .icon:last-child:not(:first-child) { transform: translateX(2px); }
 
+/* Like / Handig thumb animation & mini confetti burst */
+.vote-button .icon { transform-origin: 35% 75%; will-change: transform; }
+.confetti-burst { position: fixed; width: 0; height: 0; pointer-events: none; z-index: 250; }
+.confetti-piece { position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 1.5px; pointer-events: none; }
+.confetti-piece.is-dot { width: 5px; height: 5px; border-radius: 50%; }
+.confetti-piece.is-ribbon { width: 8px; height: 3.5px; border-radius: 2px; }
+.confetti-piece.is-spark { width: 5px; height: 5px; border-radius: 1px; transform: rotate(45deg); }
+
 @media(max-width:767px) {
   .custom-select.is-compact { max-width: 220px; }
   .sort-row > .custom-select { margin-left: auto; }

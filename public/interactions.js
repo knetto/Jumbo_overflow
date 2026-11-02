@@ -287,6 +287,58 @@ export function animateDialog(dialog) {
     { opacity: 1, y: 0, scale: 1, duration: .24, ease: 'power2.out', clearProps: 'transform,opacity' });
 }
 
+const CONFETTI_COLORS = ['#fcbf00', '#171717', '#00812d', '#e3000a', '#33b460', '#0a4fff'];
+
+export function animateVote(targetId, withConfetti = true) {
+  if (!motionAllowed()) return;
+  const btn = [...document.querySelectorAll('.vote-button[data-action="vote"]')]
+    .find(el => el.dataset.id === String(targetId));
+  if (!btn) return;
+  const thumb = btn.querySelector('.icon');
+  const count = btn.querySelector('strong');
+  gsap().fromTo(btn, { scale: .94 }, { scale: 1, duration: .38, ease: 'elastic.out(1.2, 0.5)', clearProps: 'transform' });
+  if (thumb) {
+    gsap().killTweensOf(thumb);
+    gsap().timeline({ onComplete: () => gsap()?.set(thumb, { clearProps: 'transform' }) })
+      .fromTo(thumb, { scale: .75, rotation: -18, y: 1 }, { scale: 1.38, rotation: -16, y: -4, duration: .16, ease: 'power2.out' })
+      .to(thumb, { scale: 1.08, rotation: 8, y: -1, duration: .14, ease: 'power1.inOut' })
+      .to(thumb, { scale: 1, rotation: 0, y: 0, duration: .22, ease: 'back.out(2)' });
+  }
+  if (count) {
+    gsap().fromTo(count, { y: 5, opacity: .4 }, { y: 0, opacity: 1, duration: .26, ease: 'back.out(2)', clearProps: 'transform,opacity' });
+  }
+  if (!withConfetti) return;
+  const anchor = (thumb || btn).getBoundingClientRect();
+  const cx = anchor.left + anchor.width / 2;
+  const cy = anchor.top + anchor.height / 2;
+  const burst = document.createElement('div');
+  burst.className = 'confetti-burst';
+  burst.setAttribute('aria-hidden', 'true');
+  burst.style.left = `${cx}px`;
+  burst.style.top = `${cy}px`;
+  document.body.append(burst);
+  const total = 12;
+  for (let i = 0; i < total; i++) {
+    const piece = document.createElement('span');
+    const shape = i % 3 === 0 ? 'is-dot' : i % 3 === 1 ? 'is-ribbon' : 'is-spark';
+    piece.className = `confetti-piece ${shape}`;
+    piece.style.background = CONFETTI_COLORS[i % CONFETTI_COLORS.length];
+    burst.append(piece);
+    const angle = (-Math.PI * 0.92) + (i / (total - 1)) * (Math.PI * 0.84) + (Math.random() - .5) * 0.18;
+    const dist = 22 + (i % 3) * 10 + Math.random() * 8;
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist - 6;
+    const rot = (Math.random() - .5) * 220;
+    gsap().timeline()
+      .fromTo(piece,
+        { x: 0, y: 0, scale: 0, rotation: 0, opacity: 1 },
+        { x: dx * .75, y: dy, scale: 1, rotation: rot * .6, duration: .24, ease: 'power2.out' })
+      .to(piece,
+        { x: dx, y: dy + 16, scale: .4, rotation: rot, opacity: 0, duration: .34, ease: 'power1.in' });
+  }
+  setTimeout(() => burst.remove(), 650);
+}
+
 function releaseButton() {
   if (pressedButton?.isConnected) {
     if (motionAllowed()) gsap().to(pressedButton, { scale: 1, duration: .23, ease: 'back.out(1.15)', overwrite: true, clearProps: 'transform' });
