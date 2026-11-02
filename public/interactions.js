@@ -117,10 +117,10 @@ function positionMenu(control) {
   menu.style.width = `${width}px`;
   const below = maxY - rect.bottom - 7;
   const above = rect.top - minY - 7;
-  const wanted = Math.min(control.items.size * 39 + 45, 332);
+  const wanted = Math.min(control.items.size * 45 + 52, 360);
   const upward = below < wanted && above > below;
-  const available = Math.max(78, Math.min(332, upward ? above : below));
-  list.style.maxHeight = `${Math.max(39, available - 43)}px`;
+  const available = Math.max(84, Math.min(360, upward ? above : below));
+  list.style.maxHeight = `${Math.max(44, available - 50)}px`;
   const height = menu.getBoundingClientRect().height;
   menu.style.left = `${Math.max(originX + 12, Math.min(rect.left, originX + viewportWidth - width - 12))}px`;
   menu.style.top = `${upward ? Math.max(minY, rect.top - height - 7) : rect.bottom + 7}px`;
@@ -313,7 +313,7 @@ export function initInteractions() {
   document.addEventListener('pointerdown', event => {
     if (current && !current.menu.contains(event.target) && !current.trigger.contains(event.target)) closeDropdown();
     if (current?.menu.contains(event.target) && event.pointerType === 'mouse') event.preventDefault();
-    const button = event.target.closest('.button, .icon-button, .vote-button, .profile-button');
+    const button = event.target.closest('.button, .icon-button, .vote-button, .profile-button, .header-cta, .filter-chip');
     if (button && !button.disabled && event.button === 0 && motionAllowed()) {
       pressedButton = button;
       gsap().to(button, { scale: .98, duration: .09, ease: 'power2.out', overwrite: true });

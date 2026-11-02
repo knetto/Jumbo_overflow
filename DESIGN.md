@@ -1,45 +1,63 @@
-# JumboOverflow — ontwerpupdate
+# Jumboverflow — ontwerp volgens Jumbo Kompas
 
 Deze versie wordt uitsluitend lokaal ontwikkeld en bekeken op http://localhost:4173. Er is bij deze update niets gepubliceerd.
 
 ## Richting
 
-Een rustige, herkenbare Jumbo-werkplek waarin collega's praktische kennis vinden. Het dashboard geeft eerst context, daarna duidelijke onderwerpen en vervolgens inhoud. Een bijdrage toont de collega, de vraag of aanpak en de acties. Het stemmen staat als ‘Handig’ onder de inhoud; de verticale stemkolom en filiaalranglijst zijn verwijderd uit de feed.
+Jumboverflow moet voelen als een stukje jumbo.com voor collega's: dezelfde opbouw, dezelfde componenten en dezelfde toon. Het dashboard begroet je zoals de servicepagina van Jumbo ("Hallo Jesse"), laat je meteen een onderwerp kiezen en toont daarna de kennis van collega's. Alles is gebouwd op de Kompas-tokens die jumbo.com zelf gebruikt.
 
-Jumbo-geel `#FCBF00`, bijna zwart `#171717` en Jumbo The Sans Regular, Bold en Black vormen de basis. Witruimte, lichte neutrale oppervlakken, beperkt kleurgebruik, consistente iconen en duidelijk contrast ondersteunen de inhoud. De templatebibliotheek gebruikt documentvoorbeelden, filialen herkenbare winkelillustraties en het kennisplein een eigen illustratie van twee collega's.
+## Wat we van jumbo.com hebben geanalyseerd
 
-## Bekeken referenties
+Geraadpleegd op 2 november 2026: de homepage, de servicepagina, de receptenpagina en de 404-pagina van jumbo.com (desktop en mobiel), plus de gepubliceerde stylesheet met de `--kompas-*`-designtokens.
 
-- [Jumbo Kompas — Typography](https://design.jumbo.com/latest/foundations/typography-yLZcyYAu): eigen digitale merktypografie en nadruk met Black.
-- [Slite](https://slite.com/): kennis als toegankelijke, geordende werkplek. Vertaald naar onderwerpingangen en minder concurrerende navigatie.
-- [Guru](https://www.getguru.com/): herbruikbare, herkenbare kennisbijdragen. Vertaald naar rustige contentkaarten met een duidelijke herkomst.
-- [Linear](https://linear.app/features): consistente navigatie en visuele hiërarchie. Gebruikt als productreferentie, zonder de donkere merkstijl over te nemen.
-- [Instrument — Work](https://www.instrument.com/work): samenhang tussen merk, digitaal product en beeld. Gebruikt als referentie voor een eigen visuele richting.
+| Onderdeel | Jumbo.com / Kompas | Toegepast in Jumboverflow |
+| --- | --- | --- |
+| Paginaopbouw | Ruime witte header met een groot logo, een hoog pilvormig zoekveld (50px), profiel-/filiaalknop en gele pilknop, daaronder een rustige horizontale hoofdnavigatie | De drukke bovenbalk is weggelaten zodat de header en navigatie direct en overzichtelijk openen; onder 1024px wordt de navigatie een uitschuifmenu |
+| Navigatie | Vette links van 18px zonder losse tellers op desktop, actief = gele balk van 4px | Rustige horizontale balk zonder visuele ruis; in het mobiele menu blijven de tellers zichtbaar |
+| Kleur | `#FCBF00`, tekst `#171717`, wit, `#F1F1F1`, rand `#E3E3E3`, hulptekst `#757575`, positief `#00812D` | Alle salie-/olijftinten uit de vorige versie verwijderd en vervangen door deze tokens |
+| Zachte vlakken | Bannertinten `#FFF9E5`, `#FFF0E5`, `#E5F6EB`, `#E8F6FB`, `#F4E8F2`, `#FCE5E6` | Onderwerpen, avatars, templatecovers en herobanners |
+| Typografie | Jumbo The Sans; koppen in Black; mixkoppen (regular + Black); gele, handgetekende markering onder een woord; Kalam voor "Hallo" en "Tip!" | Zelfde schaal (body 16px, intro 17–18px, koppen 26–42px); eigen getekende markering; Kalam lokaal meegeleverd |
+| Knoppen | Pil (radius 200px), 48px hoog, Bold 18px; primair geel (hover `#FDCC33`), secundair wit met rand `#9E9E9E` | Alle knoppen omgezet; kleine variant 40px/16px |
+| Chips | Pil met grijze rand, zwart bij selectie | Filters, type-keuze in formulieren, zoekvoorbeelden |
+| Panelen | Wit, 1px `#E3E3E3`, radius 8px, optionele gele accentlijn van 3px | Kaarten, zijkolom, antwoordformulier, templatebanner en vensters |
+| Herobanners & onderwerpstrook | Grote afgeronde herokaarten (zachte tint links, geel boogvlak met illustratie rechts) met direct daaronder een horizontale rij ronde icoon-snelkoppelingen | Eén krachtige herosectie ("Hallo Jesse! Samen maken we het werk slimmer" + "Idee van de week") gevolgd door de 6 onderwerpen op één rustige horizontale rij zonder hokjesgrid |
+| Meldingen | Notificatie radius 8 (note `#FFF9E5`, positief `#E5F6EB`); snackbar `#464646`, radius 4, groen icoon | Tips, privacymelding en toasts |
+| Dialoog | Radius 8, gele onderlijn, gele pilknoppen; mobiel als bottom sheet | Alle vensters |
+| Footer | Donker (`#232323`), "We helpen je graag!" met portret, "Tip!", linkkolommen, juridische regel, witte onderstrook | Volledig nagebouwd met eigen inhoud |
+| 404 / leeg | Geel tekstballonnetje "Oh oh!", Black-kop, "Hoe kunnen we je verder helpen?" met pilknoppen | Lege staten, zoekresultaten zonder treffers en een nieuwe 404-pagina |
+| Focus | 2px `#0A4FFF`, 4px afstand | Overal toegepast |
+| Toon | "Hallo!", "We helpen je graag!", "Tip!", kort, warm, je-vorm, "Bekijk …" | Copy herschreven; nieuwe "Onze 5 afspraken" in de stijl van De 7 Zekerheden |
 
-Dit zijn ontwerpinterpretaties voor dit project, geen overgenomen schermen of claims over hun interne apps.
+## UX-verbeteringen
 
-## Illustratie
+- Zoeken staat op elk scherm in de header, ook op mobiel (volle breedte, zoals jumbo.com).
+- Onderwerpen staan direct in beeld; de gekozen tegel krijgt een gele accentlijn.
+- Kleinste tekst is nu 12px (alleen USP-balk en juridische regel); metadata 14px, inhoud 16–18px. In de vorige versie stond veel tekst op 9–11px.
+- Contrast: hulptekst `#757575` op wit; geen lichtgroene tekst meer.
+- Kruimelpaden zijn klikbaar; een klik op de huidige pagina laadt die opnieuw en wist filters.
+- Een nieuwe zijkolom "Kun jij helpen?" toont onbeantwoorde vragen.
+- Stemmen, bewaren, delen en oplossen staan in één actieregel onder een bijdrage.
+- Een lege reactielijst nodigt uit om te reageren; het formulier laat zien namens wie je reageert.
+- Het menu op mobiel heeft een sluitknop, focusbeheer en blijft onbereikbaar voor het toetsenbord zolang het dicht is.
+- Vensters worden op mobiel een bottom sheet met een vaste actiebalk.
+- Een 404-pagina met vervolgstappen in plaats van een stille terugval.
+- Alle templateonderwerpen zijn filterbaar (eerder 5 van de 6).
 
-Bestand: [public/assets/colleagues-hero.png](public/assets/colleagues-hero.png).
+## Beeld
 
-Gemaakt met de ingebouwde imagegen-tool; transparante achtergrond. De uiteindelijke illustratie is in de lokale projectmap opgeslagen. De kleine checklist- en winkelillustraties zijn native HTML/CSS/SVG, zodat ze scherp blijven op elk scherm.
+- [public/assets/colleagues-hero.png](public/assets/colleagues-hero.png): bestaande illustratie, nu in de promotegel en in de footer.
+- De stadsillustraties in [public/city-art.js](public/city-art.js) gebruiken Kompas-grijzen in plaats van salie.
+- Tekstballon-smiley, checklist en markering zijn eigen SVG/CSS-tekeningen. Er zijn geen beeldbestanden van Jumbo gekopieerd, behalve het logo en de lettertypen die er al in zaten.
 
-De uiteindelijke prompt voor de gekozen illustratie:
+## Motion
 
-> Restyle this image completely as a premium ultra-minimal FLAT VECTOR EDITORIAL brand illustration for a contemporary professional Dutch supermarket web application. Preserve the idea of TWO ADULT colleagues sharing knowledge, the checklist and one small grocery shelf. REDUCE DETAIL drastically: simplify the shelf to only six geometric grocery product shapes, remove the large trolley entirely, make the bodies graceful angular paper-cut silhouettes with simple mitten hands, extremely minimal facial details (tiny eye dots and simple curved smiles), no large cartoon eyes, no detailed hair strands. One black polo uniform, one white shirt with a yellow vest. One colleague darker brown skin and one warm light skin. Strictly use crisp solid flat shapes with ZERO gradients, ZERO shading, ZERO glow, ZERO blur, ZERO shadow and NO texture. Thin charcoal contours only where useful. Restrained four colors: charcoal #171717, warm off-white #FFFDF5, Jumbo yellow #FCBF00, sage #DDE4D5 plus two natural skin tones. Plenty of genuinely transparent space around the entire freestanding illustration. Square compact composition with the two colleagues prominent, full bodies inside frame, small shelf beside them. This is a clean sophisticated abstract editorial illustration, NOT a children's cartoon and NOT a polished 3D render. No words, no letters, no logos, no background, no decorative floating UI.
+GSAP 3.15 wordt lokaal geladen. Dropdowns openen in 260 ms met `back.out(1.05)`, vensters met een korte fade en knoppen en chips geven een lichte klikfeedback. Navigatie-onderlijnen en pijlen bewegen in 150–200 ms. Bij `prefers-reduced-motion: reduce` vallen alle animaties weg.
 
-## Controle
+## Bestanden
 
-### Dropdowns en beweging
+- `public/styles.css`: tokens, basis, shell, componenten en pagina's (vervangt `styles.css` en `design.css`).
+- `public/interactions.css`: dropdowns in Kompas-stijl.
+- `public/search.css`: zoekband, chips en resultaten.
+- `public/assets/Kalam-Bold-latin.woff2`: Kalam Bold, SIL Open Font License 1.1 (Indian Type Foundry).
 
-Alle enkelvoudige selecties zijn vervangen door eigen dropdowns in de Jumbo-stijl. Een verborgen native select behoudt de formulierwaarde; de zichtbare combobox en listbox ondersteunen pijltjes, Home/End, typen om te zoeken, Enter, Tab en Escape. Het menu wordt in de bovenste browserlaag getoond en klapt waar nodig omhoog, zodat het binnen het scherm en buiten de afsnijding van een dialoog blijft.
-
-De lokaal meegeleverde GSAP 3.15 verzorgt een opening van 260 ms met `back.out(1.05)`, 5 pixels verplaatsing en een startschaling van 0.985. Het effect is bewust klein. Dialogen verschijnen met een korte fade; knoppen geven een lichte klikfeedback. Bij `prefers-reduced-motion: reduce` worden deze animaties overgeslagen.
-
-Referenties: [GSAP easing](https://gsap.com/docs/v3/Eases/), [GSAP fromTo](https://gsap.com/docs/v3/GSAP/gsap.fromTo%28%29/) en [W3C select-only combobox](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-select-only/).
-
-De twaalf filiaalillustraties hebben nu elk een eigen stadsaccent in [public/city-art.js](public/city-art.js): de Grote Kerk van Dordrecht, Domtoren, Grote Kerk van Breda, Evoluon, Erasmusbrug, Martinitoren, Tilburgse textielfabrieken, Amsterdamse grachtenpanden, John Frostbrug, Sassenpoort, Sint-Jan en Sint Servaasbrug. De winkel, lijnvoering en het kleurenpalet blijven gemeenschappelijk. Het gaat om symbolische stadsportretten. De SVG's blijven scherp op mobiele schermen en hebben elk een beschrijvende toegankelijke naam.
-
-Enkele geraadpleegde stadsreferenties: [Grote Kerk Dordrecht](https://indordrecht.nl/locaties/grote-kerk-dordrecht/), [Sassenpoort](https://www.visitzwolle.com/wat-te-doen/dagje-uit/47401-sassenpoort/) en [Sint Servaasbrug](https://www.visitmaastricht.com/nl/locaties/1335944557/sint-servaasbrug).
-
-De bestaande browsertests controleren vragen, reacties, stemmen, zoeken, templates aanpassen en downloaden, uploaden, geaggregeerde exports en delen tussen twee accounts. De nieuwe vormgeving is daarnaast visueel bekeken op desktop en mobiel. Backend en gegevensmodel zijn bij deze ontwerpupdate ongewijzigd.
+Dit zijn ontwerpinterpretaties voor een studieconcept. Het is geen officiële Jumbo-dienst. Merkmiddelen blijven eigendom van hun rechthebbenden.

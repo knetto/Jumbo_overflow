@@ -3,23 +3,23 @@ export const categories = [
   { id: 'vullen', name: 'Vullen & voorraad', icon: 'box', color: 'blue' },
   { id: 'planning', name: 'Planning & bezetting', icon: 'calendar', color: 'orange' },
   { id: 'winkel', name: 'Op de winkelvloer', icon: 'store', color: 'green' },
-  { id: 'seizoen', name: 'Seizoen & acties', icon: 'sparkles', color: 'pink' },
-  { id: 'service', name: 'Klant & service', icon: 'heart', color: 'blue' },
+  { id: 'seizoen', name: 'Seizoen & acties', icon: 'sparkles', color: 'red' },
+  { id: 'service', name: 'Klant & service', icon: 'heart', color: 'yellow' },
 ];
 
 export const branches = [
-  { id: 'dordrecht', city: 'Dordrecht', name: 'Sterrenburg', address: 'P.A. de Kok-plein', initials: 'DO', color: '#e7e1f4' },
-  { id: 'utrecht', city: 'Utrecht', name: 'Lombok', address: 'Kanaalstraat', initials: 'UT', color: '#e5eee2' },
-  { id: 'breda', city: 'Breda', name: 'Haagse Beemden', address: 'Heksenwaag', initials: 'BR', color: '#f9e4d7' },
-  { id: 'eindhoven', city: 'Eindhoven', name: 'Woensel', address: 'Winkelcentrum Woensel', initials: 'EI', color: '#dfeaf2' },
-  { id: 'rotterdam', city: 'Rotterdam', name: 'Kralingen', address: 'Oudedijk', initials: 'RO', color: '#f5e3e8' },
-  { id: 'groningen', city: 'Groningen', name: 'Centrum', address: 'Grote Markt', initials: 'GR', color: '#e4eddc' },
-  { id: 'tilburg', city: 'Tilburg', name: 'Reeshof', address: 'Heyhoefpromenade', initials: 'TI', color: '#f1e9db' },
-  { id: 'amsterdam', city: 'Amsterdam', name: 'Oost', address: 'Linnaeusstraat', initials: 'AM', color: '#dfe8f2' },
-  { id: 'arnhem', city: 'Arnhem', name: 'Schuytgraaf', address: 'Fortunastraat', initials: 'AR', color: '#eae3f3' },
-  { id: 'zwolle', city: 'Zwolle', name: 'Stadshagen', address: 'Werkerlaan', initials: 'ZW', color: '#dcebe6' },
-  { id: 'denbosch', city: 'Den Bosch', name: 'De Rompert', address: 'Rompertpassage', initials: 'DB', color: '#f5e7d5' },
-  { id: 'maastricht', city: 'Maastricht', name: 'Wyck', address: 'Stationsstraat', initials: 'MA', color: '#e7e9dd' },
+  { id: 'dordrecht', city: 'Dordrecht', name: 'Sterrenburg', address: 'P.A. de Kok-plein', initials: 'DO', color: '#ead0e6' },
+  { id: 'utrecht', city: 'Utrecht', name: 'Lombok', address: 'Kanaalstraat', initials: 'UT', color: '#ccecd7' },
+  { id: 'breda', city: 'Breda', name: 'Haagse Beemden', address: 'Heksenwaag', initials: 'BR', color: '#fee1cc' },
+  { id: 'eindhoven', city: 'Eindhoven', name: 'Woensel', address: 'Winkelcentrum Woensel', initials: 'EI', color: '#d0eef7' },
+  { id: 'rotterdam', city: 'Rotterdam', name: 'Kralingen', address: 'Oudedijk', initials: 'RO', color: '#f9ccce' },
+  { id: 'groningen', city: 'Groningen', name: 'Centrum', address: 'Grote Markt', initials: 'GR', color: '#e5f6eb' },
+  { id: 'tilburg', city: 'Tilburg', name: 'Reeshof', address: 'Heyhoefpromenade', initials: 'TI', color: '#fef2cc' },
+  { id: 'amsterdam', city: 'Amsterdam', name: 'Oost', address: 'Linnaeusstraat', initials: 'AM', color: '#e8f6fb' },
+  { id: 'arnhem', city: 'Arnhem', name: 'Schuytgraaf', address: 'Fortunastraat', initials: 'AR', color: '#f4e8f2' },
+  { id: 'zwolle', city: 'Zwolle', name: 'Stadshagen', address: 'Werkerlaan', initials: 'ZW', color: '#ccecd7' },
+  { id: 'denbosch', city: 'Den Bosch', name: 'De Rompert', address: 'Rompertpassage', initials: 'DB', color: '#fff0e5' },
+  { id: 'maastricht', city: 'Maastricht', name: 'Wyck', address: 'Stationsstraat', initials: 'MA', color: '#f1f1f1' },
 ];
 
 const rawPosts = [
