@@ -19,7 +19,9 @@ export const server = http.createServer(async (req, res) => {
       const chunks=[];let size=0;
       for await(const chunk of req){size+=chunk.length;if(size>150000){res.writeHead(413).end('Te groot');return;}chunks.push(chunk);}
       const headers=new Headers(req.headers);headers.set('oai-authenticated-user-id',`local-${localUser}`);
-      const request=new Request(`http://${req.headers.host}${req.url}`,{method:req.method,headers,body:!['GET','HEAD'].includes(req.method)?Buffer.concat(chunks):undefined});
+      const proto=(req.headers['x-forwarded-proto']||(req.headers.origin?.startsWith('https://')?'https':'http')).split(',')[0].trim();
+      const host=(req.headers['x-forwarded-host']||req.headers.host||'localhost').split(',')[0].trim();
+      const request=new Request(`${proto}://${host}${req.url}`,{method:req.method,headers,body:!['GET','HEAD'].includes(req.method)?Buffer.concat(chunks):undefined});
       const response=await handleApi(request,{DB:db});
       res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;
     }
@@ -29,7 +31,9 @@ export const server = http.createServer(async (req, res) => {
       res.writeHead(403).end(); return;
     }
     const content = await readFile(target);
-    res.writeHead(200, { 'Content-Type': types[path.extname(target)] || 'application/octet-stream', 'X-Content-Type-Options': 'nosniff' });
+    const immutable = target.endsWith('.woff2');
+    const cache = immutable ? 'public, max-age=31536000, immutable' : 'no-store, no-cache, must-revalidate';
+    res.writeHead(200, { 'Content-Type': types[path.extname(target)] || 'application/octet-stream', 'X-Content-Type-Options': 'nosniff', 'Cache-Control': cache, 'CDN-Cache-Control': cache, 'Cloudflare-CDN-Cache-Control': cache });
     res.end(content);
   } catch {
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('Niet gevonden');

@@ -16,7 +16,7 @@ export function createViews(C) {
         <button class="mobile-menu icon-button" data-action="menu" aria-label="Menu openen" aria-expanded="${ui.mobileOpen}" aria-controls="primary-navigation">${icon('menu')}</button>
         <a class="brand" href="#kennisplein" aria-label="Jumboverflow startpagina"><img src="./assets/jumbo-logo.svg" alt="Jumbo" width="154" height="31"><span class="brand-tail">verflow</span></a>
         <form class="header-search" id="search-form" role="search">
-          <input id="global-search" type="search" aria-label="Zoek een vraag, tip of template" placeholder="Waar zoek je een oplossing of template voor?" maxlength="400" value="${esc(ui.query)}" autocomplete="off">
+          <input id="global-search" type="search" aria-label="Zoek een vraag, tip of template" placeholder="Zoek een vraag, tip of template…" maxlength="400" value="${esc(ui.query)}" autocomplete="off">
           <button class="search-submit" type="submit" aria-label="Zoeken">${icon('search')}</button>
         </form>
         <div class="header-right">
