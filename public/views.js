@@ -5,7 +5,7 @@ import { renderCityArt } from './city-art.js';
  *  a horizontal main navigation, full-width bands and a dark footer. */
 export function createViews(C) {
   const { icon, esc, avatar, branch, category, categories, branches, navLink,
-    categoryTag, typeTag, voteButton, timeAgo, countText } = C;
+    categoryTag, typeTag, voteButton, timeAgo, countText, contributionAvatar } = C;
   const firstName = () => C.state.profile.name.split(' ')[0];
 
   function shell() {
@@ -64,10 +64,10 @@ export function createViews(C) {
         </section>
         <section aria-labelledby="footer-discover"><h2 id="footer-discover">Ontdekken</h2><ul class="footer-links"><li><a href="#kennisplein">Kennisplein</a></li><li><a href="#zoeken">Zoeken</a></li><li><a href="#templates">Templates</a></li><li><a href="#filialen">Filialen</a></li><li><a href="#inzichten">Praktijkinzichten</a></li></ul></section>
         <section aria-labelledby="footer-work"><h2 id="footer-work">Jouw werkplek</h2><ul class="footer-links"><li><a href="#volgend">Mijn netwerk</a></li><li><a href="#bewaard">Bewaard</a></li><li><a href="#mijn-bijdragen">Mijn bijdragen</a></li><li><button data-action="profile">Profiel en filiaal</button></li><li><button data-action="notifications">Meldingen</button></li></ul></section>
-        <section aria-labelledby="footer-about"><h2 id="footer-about">Over Jumboverflow</h2><ul class="footer-links"><li><button data-action="help">Zo werkt het</button></li><li><button data-action="guidelines">Onze 5 afspraken</button></li><li><button data-action="about">Over dit prototype &amp; huisstijl</button></li></ul></section>
+        <section aria-labelledby="footer-about"><h2 id="footer-about">Over Jumboverflow</h2><ul class="footer-links"><li><button data-action="help">Zo werkt het</button></li><li><button data-action="guidelines">Onze 5 afspraken</button></li><li><button data-action="about">Over het kennisplein</button></li></ul></section>
       </div>
-      <div class="container footer-legal"><ul><li>Zelfstandig studieconcept</li><li>Geen officiële Jumbo-dienst</li><li>Alle voorbeeldinhoud is fictief</li></ul><span>${icon('heart', 'sm')}Gemaakt voor collega's. Beter door collega's.</span></div></div>
-      <div class="footer-bottom"><div class="container"><span>Jumbo-merkmiddelen blijven eigendom van hun rechthebbenden.</span><span>© 2026 Jumboverflow</span></div></div>
+      <div class="container footer-legal"><ul><li><button data-action="guidelines">Samen houden we het prettig</button></li><li><button data-action="about">Over Jumboverflow</button></li></ul><span>${icon('heart', 'sm')}Gemaakt voor collega's. Beter door collega's.</span></div></div>
+      <div class="footer-bottom"><div class="container"><span>Vragen, tips en ervaringen van de winkelvloer.</span><span>© 2026 Jumboverflow</span></div></div>
     </footer>`;
   }
 
@@ -108,7 +108,7 @@ export function createViews(C) {
     const b = branch(p.branch);
     const answered = p.answers.some(a => a.accepted);
     const saved = state.saved.includes(p.id);
-    return `<article class="post-card" data-post="${p.id}"><div class="post-content"><div class="post-author-row">${avatar(p.author, 'medium', b.color)}<div class="post-author-info"><span class="author">${esc(p.author)}</span><button class="branch-link" data-action="branch-feed" data-id="${b.id}">Jumbo ${esc(b.city)}</button></div><span class="post-time">${timeAgo(p.createdAt)}</span><button class="post-save icon-button ${saved ? 'saved' : ''}" data-action="save-post" data-id="${p.id}" aria-label="${saved ? 'Verwijderen uit bewaard' : 'Bijdrage bewaren'}" aria-pressed="${saved}">${icon('bookmark')}</button></div><div class="post-tags">${categoryTag(p.category)}${typeTag(p.type)}</div><h3><a class="post-title" href="#vraag/${p.id}">${esc(p.title)}</a></h3><p class="post-excerpt">${esc(p.body)}</p><div class="post-footer">${voteButton(p.id, p.votes)}<a href="#vraag/${p.id}" class="meta-comments ${answered ? 'answered' : ''}">${icon('messages', 'sm')}${countText(p.answers.length, 'reactie', 'reacties')}</a>${p.solved ? `<span class="post-resolved">${icon('checkCircle', 'sm')}${p.type === 'hack' ? 'Bewezen aanpak' : 'Opgelost'}</span>` : ''}<a class="post-read link-chevron" href="#vraag/${p.id}" aria-label="Lees verder: ${esc(p.title)}">Lees verder ${icon('chevron', 'sm')}</a></div></div></article>`;
+    return `<article class="post-card" data-post="${p.id}"><div class="post-content"><div class="post-author-row">${contributionAvatar(p, 'medium', b.color)}<div class="post-author-info"><span class="author">${esc(p.author)}</span>${p.anonymous ? '<span class="field-hint">Naam en filiaal afgeschermd</span>' : `<button class="branch-link" data-action="branch-feed" data-id="${b.id}">Jumbo ${esc(b.city)}</button>`}</div><span class="post-time">${timeAgo(p.createdAt)}</span><button class="post-save icon-button ${saved ? 'saved' : ''}" data-action="save-post" data-id="${p.id}" aria-label="${saved ? 'Verwijderen uit bewaard' : 'Bijdrage bewaren'}" aria-pressed="${saved}">${icon('bookmark')}</button></div><div class="post-tags">${categoryTag(p.category)}${typeTag(p.type)}</div><h3><a class="post-title" href="#vraag/${p.id}">${esc(p.title)}</a></h3><p class="post-excerpt">${esc(p.body)}</p><div class="post-footer">${voteButton(p.id, p.votes)}<a href="#vraag/${p.id}" class="meta-comments ${answered ? 'answered' : ''}">${icon('messages', 'sm')}${countText(p.answers.length, 'reactie', 'reacties')}</a>${p.solved ? `<span class="post-resolved">${icon('checkCircle', 'sm')}${p.type === 'hack' ? 'Bewezen aanpak' : 'Opgelost'}</span>` : ''}<a class="post-read link-chevron" href="#vraag/${p.id}" aria-label="Lees verder: ${esc(p.title)}">Lees verder ${icon('chevron', 'sm')}</a></div></div></article>`;
   }
 
   function rightColumn() {
@@ -117,7 +117,7 @@ export function createViews(C) {
     const picks = state.templates.filter(t => ['t1', 't2', 't3'].includes(t.id));
     return `<aside class="right-column" aria-label="Uitgelicht op het kennisplein">
       <section class="side-card help-wanted"><h3>Kun jij helpen?</h3><p>Deze vragen wachten nog op een eerste reactie.</p>
-        <div class="side-list">${open.map(p => `<a class="side-list-item" href="#vraag/${p.id}"><span class="side-list-icon">${icon('help', 'sm')}</span><span class="side-list-text"><strong>${esc(p.title)}</strong><small>Jumbo ${esc(branch(p.branch).city)} · ${timeAgo(p.createdAt)}</small></span>${icon('chevron', 'sm')}</a>`).join('') || '<p class="side-empty">Alle vragen hebben al een reactie. Top!</p>'}</div>
+        <div class="side-list">${open.map(p => `<a class="side-list-item" href="#vraag/${p.id}"><span class="side-list-icon">${icon('help', 'sm')}</span><span class="side-list-text"><strong>${esc(p.title)}</strong><small>${p.anonymous ? 'Anonieme collega' : `Jumbo ${esc(branch(p.branch).city)}`} · ${timeAgo(p.createdAt)}</small></span>${icon('chevron', 'sm')}</a>`).join('') || '<p class="side-empty">Alle vragen hebben al een reactie. Top!</p>'}</div>
       </section>
       <section class="side-card useful-templates"><h3>Direct aan de slag</h3><p>Gemaakt door collega's. Klaar voor jou.</p>
         <div class="side-list">${picks.map(t => `<button class="side-list-item mini-doc" data-action="template" data-id="${t.id}"><span class="doc-icon ${t.format === 'CSV' ? 'csv' : ''}">${icon(t.format === 'CSV' ? 'grid' : 'files', 'sm')}</span><span class="side-list-text"><strong>${esc(t.title)}</strong><small>${t.format} · ${t.downloads} keer gebruikt</small></span>${icon('chevron', 'sm')}</button>`).join('')}</div>

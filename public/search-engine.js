@@ -1,3 +1,5 @@
+import { ANONYMOUS_AUTHOR, contributionIdentity } from './identity.js';
+
 // Local retrieval: weighted words, Dutch inflections, small typos and shop-floor concepts.
 // No external service receives search terms or community content.
 const stopwords = new Set(('de het een en of maar met voor van in op aan bij om te tot uit is zijn was wordt worden heeft hebben ik jij je jullie wij we mijn ons onze ze zij hun er hier daar dit dat die deze welke wie wat hoe waarom wanneer waar kan kunnen wil willen moet moeten zou zouden als dan ook nog al niet geen wel even echt iets veel meer minder naar door over zoek zoeken graag help hulp tips tip handige handig aanpak doen gaat gaan krijg krijgen laat laten zorgen zorgt ervoor werkt werken weten weet steeds blijft komt please how can i my we our the a an to for with and do does me need').split(' '));
@@ -65,6 +67,7 @@ function similarity(query, term) {
 }
 
 function makeDocument(item, kind, metadata) {
+  if (item.anonymous) item = { ...item, ...contributionIdentity(null, true) };
   const branch=metadata.branches?.find(b=>b.id===item.branch);
   const category=metadata.categories?.find(c=>c.id===item.category);
   const fields=[
@@ -74,7 +77,7 @@ function makeDocument(item, kind, metadata) {
     {text:kind==='template'?'template templates sjabloon sjablonen':kind==='hack'?'praktijkhack praktijkhacks hack hacks':'vraag vragen',weight:3,label:'Soort'},
     {text:[item.author,branch?.city,branch?.name,branch?.address].filter(Boolean).join(' '),weight:4,label:'Collega & filiaal'},
     {text:category?.name,weight:1,label:'Categorie'},
-    ...(kind==='template'?[{text:item.content,weight:2,label:'In het template'}]:(item.answers||[]).map(a=>({text:a.body,weight:a.accepted?2.8:2.3,label:`Antwoord van ${a.author}`}))),
+    ...(kind==='template'?[{text:item.content,weight:2,label:'In het template'}]:(item.answers||[]).map(a=>({text:a.body,weight:a.accepted?2.8:2.3,label:`Antwoord van ${a.anonymous?ANONYMOUS_AUTHOR:a.author}`}))),
   ].filter(f=>f.text).map(f=>({...f,terms:new Set(words(f.text)),concepts:findConcepts(f.text)}));
   return {item,kind,fields};
 }

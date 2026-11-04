@@ -71,3 +71,20 @@ test('Search rendering escapes query, titles, answers and template content',()=>
   assert.doesNotMatch(html,/<img|<script|onerror="/);
   assert.match(html,/&lt;img/);assert.match(html,/<mark>retourenkompas<\/mark>/);
 });
+
+test('Anonymous attribution is excluded from colleague search, branch filters and answer labels',()=>{
+  const state=createSeed();
+  const item={...state.posts[0],id:'private-search',anonymous:true,author:'Verborgennaam',branch:'breda',title:'Uniekwerkidee voor de werkvloer',body:'Een andere werkwijze voor ons team.',tags:[],answers:[{id:'private-answer',anonymous:true,author:'Geheimenaam',body:'De tussenstap testwerkmethode helpt bij deze werkwijze.',votes:0}]};
+  state.posts=[item];state.templates=[];
+  assert.equal(search('Verborgennaam',state).length,0);
+  assert.equal(search('Breda',state).length,0);
+  const found=search('Uniekwerkidee',state)[0];
+  assert.equal(found.item.author,'Anonieme collega');assert.equal(found.item.branch,null);
+  assert.equal(search('testwerkmethode tussenstap',state)[0].source,'Antwoord van Anonieme collega');
+  const filters={type:'all',category:'all',branch:'all'};
+  const html=searchResults(state,'testwerkmethode tussenstap',filters,metadata);
+  assert.match(html,/Anonieme collega/);assert.doesNotMatch(html,/Verborgennaam|Geheimenaam|Jumbo null/);
+  assert.doesNotMatch(html.slice(html.indexOf('<ol class="knowledge-results">')),/Jumbo Breda/);
+  const filtered=searchResults(state,'Uniekwerkidee',{...filters,branch:'breda'},metadata);
+  assert.doesNotMatch(filtered,/data-result="private-search"/);
+});

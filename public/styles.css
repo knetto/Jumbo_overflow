@@ -2295,6 +2295,49 @@ fieldset {
   color: var(--text-support)
 }
 
+.anonymous-avatar {
+  background: var(--bg-support);
+  color: var(--ink)
+}
+
+.anonymity-option {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--bg-support);
+  border: 1px solid var(--border);
+  border-radius: var(--radius)
+}
+
+.anonymity-label,
+.anonymity-label span {
+  display: flex;
+  align-items: center;
+  gap: 10px
+}
+
+.anonymity-label {
+  width: fit-content;
+  cursor: pointer;
+  font-weight: 700
+}
+
+.anonymity-label input {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  accent-color: #fcbf00;
+  cursor: pointer
+}
+
+.anonymity-option .field-hint {
+  margin: 8px 0 0;
+  line-height: 1.5
+}
+
+.posting-identity {
+  margin-top: 10px
+}
+
 .detail-aside {
   display: flex;
   flex-direction: column;

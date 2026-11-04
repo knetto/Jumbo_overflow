@@ -7,7 +7,7 @@
     "dev": "node server.mjs",
     "start": "node server.mjs",
     "test": "node --test tests/api.test.mjs tests/app.test.mjs tests/dropdowns.test.mjs tests/search.test.mjs tests/search-browser.test.mjs",
-    "check": "node --check public/app.js && node --check public/data.js && node --check public/views.js && node --check public/city-art.js && node --check public/interactions.js && node --check public/search-engine.js && node --check public/search-view.js && node --check worker/api.js",
+    "check": "node --check public/app.js && node --check public/data.js && node --check public/views.js && node --check public/ui.js && node --check public/identity.js && node --check public/city-art.js && node --check public/interactions.js && node --check public/search-engine.js && node --check public/search-view.js && node --check worker/api.js",
     "build": "node scripts/build.mjs",
     "db:generate": "drizzle-kit generate"
   },

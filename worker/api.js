@@ -1,4 +1,5 @@
 import { createSeed, categories, branches } from '../public/data.js';
+import { contributionIdentity } from '../public/identity.js';
 
 class ApiError extends Error { constructor(message,status=400){super(message);this.status=status;} }
 const json=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
@@ -6,6 +7,7 @@ const safeId=value=>typeof value==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(value
 function textField(value,min,max,label){if(typeof value!=='string'||value.trim().length<min||value.length>max)throw new ApiError(`${label}: gebruik ${min} tot ${max} tekens.`);return value.trim();}
 function validateCategory(value){if(!categories.some(c=>c.id===value))throw new ApiError('Kies een geldig onderwerp.');return value;}
 function validateId(value){if(!safeId(value))throw new ApiError('Ongeldige verwijzing.');return value;}
+function identity(profile,anonymous){if(anonymous!==undefined&&typeof anonymous!=='boolean')throw new ApiError('Kies of je anoniem wilt plaatsen.');return contributionIdentity(profile,anonymous===true);}
 function defaults(){const s=createSeed();return {profile:s.profile,saved:s.saved,savedTemplates:s.savedTemplates,followedBranches:s.followedBranches,followedCategories:[],templateDownloads:[]};}
 async function ensureSeed(db){
   if(await db.prepare('SELECT id FROM records WHERE id = ?').bind('seed-v1').first())return;
@@ -31,7 +33,7 @@ export async function readState(db,userId){
   ]);
   const voteCounts=Object.fromEntries(allVotes.results.map(r=>[r.target_id,Number(r.count)]));
   const downloadMap=Object.fromEntries(downloadCounts.results.map(r=>[r.target_id,Number(r.count)]));
-  const docs=recordsResult.results.map(r=>({...JSON.parse(r.data),id:r.id,own:r.owner_id===userId,_kind:r.kind,_parent:r.parent_id}));
+  const docs=recordsResult.results.map(r=>{const data=JSON.parse(r.data);return {...data,...(data.anonymous===true?contributionIdentity(null,true):{}),id:r.id,own:r.owner_id===userId,_kind:r.kind,_parent:r.parent_id};});
   const posts=docs.filter(r=>r._kind==='post').map(p=>{const {_kind,_parent,...post}=p;return {...post,votes:post.votes+(voteCounts[p.id]||0),answers:docs.filter(a=>a._kind==='answer'&&a._parent===p.id).map(a=>{const {_kind,_parent,...answer}=a;return {...answer,votes:answer.votes+(voteCounts[a.id]||0)};})};});
   const templates=docs.filter(r=>r._kind==='template').map(t=>{const {_kind,_parent,...template}=t;return {...template,downloads:t.downloads+(downloadMap[t.id]||0),forks:t.forks+docs.filter(r=>r._kind==='template'&&r._parent===t.id).length};});
   return {version:1,...preferences,posts,templates,votes:myVotes.results.map(r=>r.target_id),storage:'shared'};
@@ -54,7 +56,7 @@ export async function handleApi(request,env){
       if(payload.profile){const p=payload.profile;allowed.profile={name:textField(p.name,2,70,'Naam'),role:textField(p.role,2,60,'Rol'),branch:p.branch};if(!branches.some(b=>b.id===p.branch))throw new ApiError('Kies een geldig filiaal.');}
       for(const field of ['saved','savedTemplates','followedBranches','followedCategories']){if(payload[field]){if(!Array.isArray(payload[field])||payload[field].length>1000||!payload[field].every(safeId))throw new ApiError('Je voorkeuren zijn ongeldig.');allowed[field]=[...new Set(payload[field])];}}
       await db.prepare('INSERT INTO settings (user_id,data) VALUES (?,?) ON CONFLICT(user_id) DO UPDATE SET data = excluded.data').bind(userId,JSON.stringify(allowed)).run();
-      if(payload.profile)await db.prepare("UPDATE records SET data = json_set(data,'$.author',?) WHERE owner_id = ?").bind(allowed.profile.name,userId).run();
+      if(payload.profile)await db.prepare("UPDATE records SET data = json_set(data,'$.author',?) WHERE owner_id = ? AND COALESCE(json_extract(data,'$.anonymous'),0) = 0").bind(allowed.profile.name,userId).run();
     } else if(action==='vote'){
       const targetId=validateId(payload.targetId);const target=await db.prepare("SELECT id FROM records WHERE id = ? AND kind IN ('post','answer')").bind(targetId).first();if(!target)throw new ApiError('Deze bijdrage bestaat niet.',404);
       if(typeof payload.value!=='boolean')throw new ApiError('Ongeldige stem.');
@@ -62,11 +64,11 @@ export async function handleApi(request,env){
       else await db.prepare('DELETE FROM votes WHERE user_id = ? AND target_id = ?').bind(userId,targetId).run();
     } else if(action==='create-post'){
       const p=payload.post;if(!p||!['question','hack'].includes(p.type))throw new ApiError('Kies een vraag of praktijkhack.');
-      const post={id:validateId(p.id),title:textField(p.title,8,150,'Titel'),body:textField(p.body,20,10000,'Beschrijving'),category:validateCategory(p.category),type:p.type,author:profile.name,branch:profile.branch,votes:0,solved:p.type==='hack',createdAt:now,tags:Array.isArray(p.tags)?p.tags.filter(t=>typeof t==='string').slice(0,5).map(t=>t.slice(0,40)):[]};
+      const post={id:validateId(p.id),title:textField(p.title,8,150,'Titel'),body:textField(p.body,20,10000,'Beschrijving'),category:validateCategory(p.category),type:p.type,...identity(profile,p.anonymous),votes:0,solved:p.type==='hack',createdAt:now,tags:Array.isArray(p.tags)?p.tags.filter(t=>typeof t==='string').slice(0,5).map(t=>t.slice(0,40)):[]};
       await insertRecord(db,post.id,'post',userId,post).run();
     } else if(action==='create-answer'){
       const post=await getRecord(db,payload.postId,'post');const a=payload.answer;if(!a)throw new ApiError('Schrijf een reactie.');
-      const answer={id:validateId(a.id),body:textField(a.body,10,6000,'Reactie'),author:profile.name,branch:profile.branch,votes:0,accepted:false,createdAt:now};
+      const answer={id:validateId(a.id),body:textField(a.body,10,6000,'Reactie'),...identity(profile,a.anonymous),votes:0,accepted:false,createdAt:now};
       await insertRecord(db,answer.id,'answer',userId,answer,post.id).run();
     } else if(action==='create-template'||action==='fork-template'){
       const t=payload.template;if(!t)throw new ApiError('Vul een template in.');const parent=action==='fork-template'?await getRecord(db,payload.parentId,'template'):null;const original=parent?JSON.parse(parent.data):null;

@@ -63,6 +63,6 @@ function resultCard(result,index,{branches,categories}) {
       <h3>${template?`<button data-action="template" data-id="${esc(item.id)}">${title}</button>`:`<a class="post-title" href="#vraag/${encodeURIComponent(item.id)}">${title}</a>`}</h3>
       ${source.startsWith('Antwoord')||source==='In het template'?`<div class="search-source">${icon(source.startsWith('Antwoord')?'messages':'files','sm')}${esc(source)}</div>`:''}
       <p class="search-snippet">${highlight(snippet,terms)}</p>
-      <div class="search-result-footer"><span>Jumbo ${esc(b?.city||item.branch)} <span aria-hidden="true">·</span> ${esc(item.author)}</span><span>${template?`${item.downloads} downloads`:`${item.answers?.length||0} reacties`}</span>${template?`<button data-action="template" data-id="${esc(item.id)}">Bekijk template ${icon('chevron','sm')}</button>`:`<a href="#vraag/${encodeURIComponent(item.id)}">Bekijk aanpak ${icon('chevron','sm')}</a>`}</div></div>
+      <div class="search-result-footer"><span>${item.anonymous?'Anonieme collega':`Jumbo ${esc(b?.city||item.branch)} <span aria-hidden="true">·</span> ${esc(item.author)}`}</span><span>${template?`${item.downloads} downloads`:`${item.answers?.length||0} reacties`}</span>${template?`<button data-action="template" data-id="${esc(item.id)}">Bekijk template ${icon('chevron','sm')}</button>`:`<a href="#vraag/${encodeURIComponent(item.id)}">Bekijk aanpak ${icon('chevron','sm')}</a>`}</div></div>
     </article></li>`;
 }

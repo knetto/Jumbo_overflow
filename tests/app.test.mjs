@@ -76,6 +76,55 @@ test('A colleague can ask, answer, accept an answer and reload their contributio
   assert.ok((await page.locator('.detail-content').textContent()).includes('Opgelost'));
   await context.close();
 });
+
+test('Anonymous tip and answer persist locally on mobile, including draft choice and profile edits',async()=>{
+  const {page,context}=await fresh({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  try{
+    await page.getByRole('button',{name:'Stel je vraag',exact:true}).click();
+    assert.equal(await page.getByRole('checkbox',{name:'Anoniem plaatsen',exact:true}).isChecked(),false);
+    await page.getByRole('checkbox',{name:'Anoniem plaatsen',exact:true}).check();
+    await page.locator('input[name="type"][value="template"]').check();
+    assert.equal(await page.locator('#post-anonymity').isVisible(),false);
+    assert.equal(await page.locator('#post-anonymous').isChecked(),false);
+    await page.locator('input[name="type"][value="hack"]').check();
+    await page.locator('#post-title').fill('Een andere taakverdeling tijdens het vullen');
+    await page.locator('#post-body').fill('Wij verdelen de vracht per gangpad en wisselen halverwege zodat iedereen kan bijspringen.');
+    await page.getByRole('checkbox',{name:'Anoniem plaatsen',exact:true}).check();
+    assert.match(await page.locator('#post-identity').textContent(),/Anonieme collega/);
+    await mkdir('test-results',{recursive:true});
+    await page.screenshot({path:'test-results/anonymous-post-mobile.png',fullPage:true});
+    await page.getByRole('button',{name:'Publiceer bijdrage'}).click();
+    await page.locator('.detail-content h1').waitFor();
+    assert.equal(await page.locator('.detail-content .post-meta .author').textContent(),'Anonieme collega');
+    assert.equal(await page.locator('.author-card [data-action="follow"]').count(),0);
+    assert.equal(await page.locator('.anonymous-avatar').count(),2);
+    const {profile}=await page.evaluate(()=>JSON.parse(localStorage.getItem('jumbooverflow.v1')));
+    assert.doesNotMatch(await page.locator('.detail-content .post-meta').textContent(),new RegExp(profile.name));
+    await page.locator('#answer-body').fill('Met een korte overdracht per gangpad weten wij precies wat nog moet gebeuren.');
+    await page.getByRole('checkbox',{name:'Anoniem antwoorden',exact:true}).check();
+    await page.locator('.detail-content .vote-button').click();
+    assert.equal(await page.getByRole('checkbox',{name:'Anoniem antwoorden',exact:true}).isChecked(),true);
+    assert.match(await page.locator('#answer-body').inputValue(),/overdracht per gangpad/);
+    await page.getByRole('button',{name:'Plaats je reactie'}).click();
+    assert.equal(await page.locator('.answer-card .author').textContent(),'Anonieme collega');
+    await page.getByRole('button',{name:'Jouw profiel aanpassen',exact:true}).click();
+    assert.doesNotMatch(await page.getByRole('dialog').textContent(),/ChatGPT|demo-profiel/);
+    await page.locator('#profile-name').fill('Gewijzigde Collega');
+    await page.getByRole('button',{name:'Profiel opslaan',exact:true}).click();
+    await page.reload();await page.locator('.answer-card').waitFor();
+    await page.screenshot({path:'test-results/anonymous-detail-mobile.png',fullPage:true});
+    assert.equal(await page.locator('.detail-content .author').textContent(),'Anonieme collega');
+    assert.equal(await page.locator('.answer-card .author').textContent(),'Anonieme collega');
+    const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('jumbooverflow.v1')).posts.find(p=>p.own));
+    assert.equal(saved.branch,null);assert.equal(saved.answers[0].branch,null);
+    assert.equal(saved.anonymous,true);assert.equal(saved.answers[0].anonymous,true);
+    await page.goto('http://localhost:4173/#mijn-bijdragen');
+    await page.locator('.post-card').first().waitFor();
+    assert.equal(await page.locator('.post-card .author').textContent(),'Anonieme collega');
+    assert.equal(await page.locator('.post-card .branch-link').count(),0);
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+  }finally{await context.close();}
+});
 test('Fork keeps the original unchanged, persists content and downloads the real file',async()=>{
   const {page,context}=await fresh();
   await page.locator('a.nav-link[href="#templates"]').click();
@@ -146,27 +195,38 @@ test('Mobile: navigation, all key pages and dialogs fit a 390px viewport',async(
   assert.deepEqual(errors,[]);
 });
 
-test('Shared browser flow: a second account sees and answers the first account’s question',async()=>{
+test('Shared browser flow: anonymous question and reply hide names and branches across accounts',async()=>{
   const a=await browser.newContext({viewport:{width:1440,height:1000}});
   const b=await browser.newContext({viewport:{width:1440,height:1000}});
   try{
     const alice=await a.newPage();const bob=await b.newPage();
     await alice.goto('http://localhost:4173');await alice.locator('.post-card').first().waitFor();
+    await alice.request.post('http://localhost:4173/api/actions',{data:{action:'settings',payload:{profile:{name:'Alice Browser',branch:'breda',role:'Teamleider'}}}});
+    await alice.reload();await alice.locator('.post-card').first().waitFor();
     await alice.getByRole('button',{name:'Stel je vraag',exact:true}).click();
     const title=`Browsercontrole overdracht ${Date.now()}`;
     await alice.locator('#post-title').fill(title);
     await alice.locator('#post-body').fill('Wij testen of een vraag echt vanuit een andere browser zichtbaar en te beantwoorden is.');
+    await alice.getByRole('checkbox',{name:'Anoniem plaatsen',exact:true}).check();
     const save=alice.waitForResponse(r=>r.url().includes('/api/actions')&&r.request().postData()?.includes('create-post'));
     await alice.getByRole('button',{name:'Publiceer bijdrage'}).click();
     assert.equal((await save).status(),200);
     const href=alice.url();
     await bob.goto(href);await bob.locator('.detail-content h1').waitFor();
     assert.equal(await bob.locator('.detail-content h1').textContent(),title);
+    assert.equal(await bob.locator('.detail-content .author').textContent(),'Anonieme collega');
+    assert.doesNotMatch(await bob.locator('.detail-content .post-meta').textContent(),/Alice Browser|Breda/);
+    assert.equal(await bob.locator('.author-card [data-action="follow"]').count(),0);
+    await bob.request.post('http://localhost:4173/api/actions',{data:{action:'settings',payload:{profile:{name:'Bob Browser',branch:'utrecht',role:'Winkelmedewerker'}}}});
+    await bob.reload();await bob.locator('.detail-content h1').waitFor();
     await bob.locator('#answer-body').fill('Dit antwoord komt vanuit een tweede browser en is echt gedeeld opgeslagen.');
+    await bob.getByRole('checkbox',{name:'Anoniem antwoorden',exact:true}).check();
     const reply=bob.waitForResponse(r=>r.url().includes('/api/actions')&&r.request().postData()?.includes('create-answer'));
     await bob.getByRole('button',{name:'Plaats je reactie'}).click();assert.equal((await reply).status(),200);
     await alice.reload();await alice.locator('.answer-card').waitFor();
     assert.match(await alice.locator('.answer-card').textContent(),/tweede browser/);
+    assert.equal(await alice.locator('.answer-card .author').textContent(),'Anonieme collega');
+    assert.doesNotMatch(await alice.locator('.answer-card .post-meta').textContent(),/Bob Browser|Utrecht/);
     const accept=alice.waitForResponse(r=>r.url().includes('/api/actions')&&r.request().postData()?.includes('accept-answer'));
     await alice.getByRole('button',{name:'Dit hielp mij'}).click();assert.equal((await accept).status(),200);
     await bob.reload();await bob.locator('.answer-card.accepted').waitFor();

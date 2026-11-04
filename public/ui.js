@@ -45,6 +45,7 @@ export const icon = (name, size='') => `<svg class="icon ${size}" viewBox="0 0 2
 export const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 export const initials = name => /^[A-Z]{2}$/.test(name) ? name : name.split(' ').filter(Boolean).filter((_,i,a)=>i===0||i===a.length-1).map(x=>x[0]).join('').toUpperCase();
 export const avatar = (name, extra='', color='') => `<span class="avatar ${extra}" aria-hidden="true" ${color ? `style="background:${esc(color)}"` : ''}>${esc(initials(name))}</span>`;
+export const contributionAvatar = (record, extra='', color='') => record.anonymous ? `<span class="avatar anonymous-avatar ${extra}" aria-hidden="true">${icon('user', 'sm')}</span>` : avatar(record.author, extra, color);
 
 /** Jumbo-style speech bubble used as a friendly sticker ("Hallo", "Oh oh!"). Original drawing. */
 export const speechSmiley = `<svg class="speech-smiley" viewBox="0 0 72 68" aria-hidden="true" focusable="false"><path d="M12 4h48a8 8 0 0 1 8 8v32a8 8 0 0 1-8 8H30l-13 12 1-12h-6a8 8 0 0 1-8-8V12a8 8 0 0 1 8-8z" fill="#fcbf00"/><circle cx="27" cy="22" r="3.4" fill="#171717"/><circle cx="45" cy="22" r="3.4" fill="#171717"/><path d="M23 32c7 8 19 8 26 0" fill="none" stroke="#171717" stroke-width="4" stroke-linecap="round"/></svg>`;

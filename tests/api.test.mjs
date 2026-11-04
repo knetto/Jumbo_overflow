@@ -74,3 +74,64 @@ test('Server validates fields and prevents cross-origin writes',async()=>{
     assert.equal((await call('alice','create-answer',{postId:'missing',answer:{id:'test-answer',body:'Dit is een lang genoeg antwoord.'}})).status,404);
   }finally{db.close();}
 });
+
+test('Anonymous questions, tips and answers omit identity while keeping ownership',async()=>{
+  const {db,call}=harness();try{
+    await call('alice','settings',{profile:{name:'Alice Private',branch:'breda',role:'Teamleider'}});
+    for(const type of ['question','hack']){
+      const id=`anonymous-${type}`;
+      const created=await call('alice','create-post',{post:{...post,id,type,anonymous:true,author:'Alice Private',branch:'breda'}});
+      assert.equal(created.status,200);
+      assert.equal(created.state.posts.find(p=>p.id===id).own,true);
+      const shared=(await call('bob')).state.posts.find(p=>p.id===id);
+      assert.equal(shared.author,'Anonieme collega');assert.equal(shared.branch,null);
+      assert.equal(shared.anonymous,true);assert.equal(shared.own,false);
+      assert.equal(shared.owner_id,undefined);
+      const stored=await db.prepare('SELECT data FROM records WHERE id = ?').bind(id).first();
+      assert.doesNotMatch(stored.data,/Alice Private|breda/);
+    }
+    await call('bob','settings',{profile:{name:'Bob Private',branch:'utrecht',role:'Winkelmedewerker'}});
+    const replied=await call('bob','create-answer',{postId:'anonymous-question',answer:{id:'anonymous-answer',body:'Een andere taakverdeling helpt ons bij de avondoverdracht.',anonymous:true}});
+    assert.equal(replied.status,200);
+    assert.equal(replied.state.posts.find(p=>p.id==='anonymous-question').answers[0].own,true);
+    const answer=(await call('alice')).state.posts.find(p=>p.id==='anonymous-question').answers[0];
+    assert.equal(answer.author,'Anonieme collega');assert.equal(answer.branch,null);assert.equal(answer.own,false);
+    assert.doesNotMatch((await db.prepare('SELECT data FROM records WHERE id = ?').bind(answer.id).first()).data,/Bob Private|utrecht/);
+    assert.equal((await call('bob','solve',{postId:'anonymous-question',value:true})).status,403);
+    assert.equal((await call('bob','accept-answer',{postId:'anonymous-question',answerId:answer.id,value:true})).status,403);
+    const accepted=await call('alice','accept-answer',{postId:'anonymous-question',answerId:answer.id,value:true});
+    assert.equal(accepted.status,200);assert.equal(accepted.state.posts.find(p=>p.id==='anonymous-question').solved,true);
+  }finally{db.close();}
+});
+
+test('Profile changes preserve anonymity in storage and all public responses',async()=>{
+  const {db,call}=harness();try{
+    await call('alice','create-post',{post:{...post,anonymous:true}});
+    await call('alice','create-answer',{postId:post.id,answer:{id:'private-reply',body:'Dit is een antwoord zonder mijn naam of filiaal.',anonymous:true}});
+    await call('alice','create-post',{post:{...post,id:'named-post'}});
+    await call('alice','create-answer',{postId:'named-post',answer:{id:'named-reply',body:'Dit antwoord wordt onder mijn eigen naam geplaatst.'}});
+    const result=await call('alice','settings',{profile:{name:'Changed Private Name',branch:'utrecht',role:'Teamleider'}});
+    assert.equal(result.status,200);
+    const mine=result.state.posts.find(p=>p.id===post.id);
+    assert.equal(mine.author,'Anonieme collega');assert.equal(mine.answers[0].author,'Anonieme collega');
+    for(const id of [post.id,'private-reply']){
+      const stored=JSON.parse((await db.prepare('SELECT data FROM records WHERE id = ?').bind(id).first()).data);
+      assert.equal(stored.author,'Anonieme collega');assert.equal(stored.branch,null);
+    }
+    const named=result.state.posts.find(p=>p.id==='named-post');
+    assert.equal(named.author,'Changed Private Name');assert.equal(named.answers[0].author,'Changed Private Name');
+    const theirs=(await call('bob')).state.posts.find(p=>p.id===post.id);
+    assert.doesNotMatch(JSON.stringify(theirs),/Changed Private Name|utrecht/);
+  }finally{db.close();}
+});
+
+test('Anonymous flag must be a boolean and defaults to a named contribution',async()=>{
+  const {db,call}=harness();try{
+    for(const anonymous of ['true','false',1,null]){
+      assert.equal((await call('alice','create-post',{post:{...post,anonymous}})).status,400);
+    }
+    const result=await call('alice','create-post',{post:{...post,anonymous:false}});
+    assert.equal(result.status,200);assert.equal(result.state.posts.find(p=>p.id===post.id).anonymous,false);
+    assert.equal((await call('alice','create-answer',{postId:post.id,answer:{id:'bad-answer',body:'Een antwoord met ongeldige instellingen.',anonymous:'false'}})).status,400);
+  }finally{db.close();}
+});
